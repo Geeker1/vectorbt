@@ -1856,6 +1856,7 @@ def simulate_from_signal_func_nb(target_shape: tp.Shape,
                                  size: tp.ArrayLike = np.asarray(np.inf),
                                  price: tp.ArrayLike = np.asarray(np.inf),
                                  size_type: tp.ArrayLike = np.asarray(SizeType.Amount),
+                                 leverage: tp.Float = 1.0,
                                  fees: tp.ArrayLike = np.asarray(0.),
                                  fixed_fees: tp.ArrayLike = np.asarray(0.),
                                  slippage: tp.ArrayLike = np.asarray(0.),
@@ -1988,6 +1989,9 @@ def simulate_from_signal_func_nb(target_shape: tp.Shape,
         group_len = to_col - from_col
         cash_now = init_cash[group]
         free_cash_now = init_cash[group]
+
+        cash_now = cash_now * leverage
+        free_cash_now = free_cash_now * leverage
 
         for i in range(target_shape[0]):
             for k in range(group_len):
