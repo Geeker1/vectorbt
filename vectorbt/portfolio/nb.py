@@ -1857,6 +1857,7 @@ def simulate_from_signal_func_nb(target_shape: tp.Shape,
                                  price: tp.ArrayLike = np.asarray(np.inf),
                                  size_type: tp.ArrayLike = np.asarray(SizeType.Amount),
                                  leverage: tp.Float = 1.0,
+                                 use_percent: bool = False,
                                  fees: tp.ArrayLike = np.asarray(0.),
                                  fixed_fees: tp.ArrayLike = np.asarray(0.),
                                  slippage: tp.ArrayLike = np.asarray(0.),
@@ -2246,6 +2247,18 @@ def simulate_from_signal_func_nb(target_shape: tp.Shape,
                 _direction = direction_arr[col]
                 _slippage = slippage_arr[col]
                 if _size != 0:
+                    _sl_stop = flex_select_auto_nb(sl_stop, i, col, flex_2d)
+
+                    if use_percent and _size_type == SizeType.Percent and np.isnan(sl_curr_stop[col]):
+                        # Initial order booking'
+                        # If we set use_percent configuration, we can manipulate the size attribute to always pick
+                        # the right percentage.
+                        normalized_size = cash_now / leverage
+                        prev_size = _size * normalized_size
+                        real_sl_stop = _price + np.sign(_size) * _sl_stop * _price
+                        _size = abs( (prev_size) / (_price - real_sl_stop))
+                        _size_type = 0
+
                     if _size > 0:  # long order
                         if _direction == Direction.ShortOnly:
                             _size *= -1  # must reverse for process_order_nb
