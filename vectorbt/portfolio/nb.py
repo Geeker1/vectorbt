@@ -1991,6 +1991,8 @@ def simulate_from_signal_func_nb(target_shape: tp.Shape,
         cash_now = init_cash[group]
         free_cash_now = init_cash[group]
 
+        init_init_cash = cash_now
+
         cash_now = cash_now * leverage
         free_cash_now = free_cash_now * leverage
 
@@ -2252,8 +2254,10 @@ def simulate_from_signal_func_nb(target_shape: tp.Shape,
                     if use_percent and _size_type == SizeType.Percent and np.isnan(sl_curr_stop[col]):
                         # Initial order booking'
                         # If we set use_percent configuration, we can manipulate the size attribute to always pick
-                        # the right percentage.
-                        normalized_size = cash_now / leverage
+                        # the right percentage of initial cash amount accounting for leverage also.
+
+                        normalized_size = init_init_cash - (init_init_cash * leverage - cash_now)
+
                         prev_size = _size * normalized_size
                         real_sl_stop = _price + np.sign(_size) * _sl_stop * _price
                         _size = abs( (prev_size) / (_price - real_sl_stop))
